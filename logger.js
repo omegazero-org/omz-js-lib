@@ -1,20 +1,25 @@
 
 
-var fs = require("fs");
+let fs = require("fs");
 
-var omzutil = require("./util.js");
-var meta = require("./meta.json");
+let omzutil = require("./util.js");
+let meta = require("./meta.json");
 
-var logLevel = 3;
+let logLevel = 3;
 
-var logSaveIntervalTime = 300000;
-var logSaveInterval;
-var logCache = "";
-var logFile;
+let logSaveIntervalTime = 300000;
+let logSaveInterval;
+let logCache = "";
+let logFile;
+
+let logMessageCallback;
+
 
 function log(level, str, color){
-	var time = Date.now();
+	let time = Date.now();
 	log0(new Date(time).toString().substring(0, 24) + "." + omzutil.pad(time % 1000, 3) + " [" + level + "] " + str, color);
+	if(typeof(logMessageCallback) == "function")
+		logMessageCallback(str, level);
 }
 
 function log0(str, color){
@@ -101,5 +106,9 @@ module.exports.close = () => {
 
 module.exports.getLogCache = () => {
 	return logCache;
+};
+
+module.exports.setLogCallback = (handler) => {
+	logMessageCallback = handler;
 };
 
