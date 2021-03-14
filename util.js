@@ -1,6 +1,6 @@
 
 
-var logger = require("./logger.js");
+let logger = require("./logger.js");
 
 function pad(n, width, z) {
 	z = z || '0';
@@ -39,9 +39,9 @@ module.exports.initPrototypes = () => {
 	};
 };
 
-let closed = false;
-
 module.exports.initHandlers = (onClose, onUncaught, onRejection) => {
+	let closed = false;
+
 	let close = () => {
 		if(!closed){
 			closed = true;

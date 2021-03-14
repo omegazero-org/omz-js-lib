@@ -7,10 +7,13 @@ let meta = require("./meta.json");
 
 let logLevel = 3;
 
-let logSaveIntervalTime = 300000;
+
+const logSaveIntervalTime = 300000;
+
 let logSaveInterval;
 let logCache = "";
 let logFile;
+
 
 let logMessageCallback;
 
@@ -60,6 +63,8 @@ let logLevels = [
 ];
 
 function log_save(){
+	if(!logCache)
+		return;
 	try{
 		fs.appendFileSync(logFile, logCache);
 		logCache = "";
@@ -85,12 +90,21 @@ for(let i = 0; i < logLevels.length; i++){
 module.exports.consoleLog = console.log;
 
 module.exports.init = (loglevel, logfile) => {
+	let lastSave = 0;
+
 	console.log = (str) => {
 		log("stdout", str);
 	};
 	logFile = logfile;
 	if(logFile){
-		logSaveInterval = setInterval(log_save, logSaveIntervalTime);
+		setInterval(() => {
+			let time = Date.now();
+			let roundTime = time - time % logSaveIntervalTime;
+			if(time - lastSave > logSaveIntervalTime){
+				lastSave = roundTime;
+				log_save();
+			}
+		}, 500).unref();
 	}
 	logLevel = loglevel;
 	module.exports.debug("omz-lib version " + meta.version + " (log level " + loglevel + ")");
