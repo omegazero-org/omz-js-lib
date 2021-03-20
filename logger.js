@@ -5,8 +5,6 @@ let fs = require("fs");
 let omzutil = require("./util.js");
 let meta = require("./meta.json");
 
-let logLevel = 3;
-
 
 const logSaveIntervalTime = 300000;
 
@@ -18,9 +16,12 @@ let logFile;
 let logMessageCallback;
 
 
+let internal = {log, log0, logLevel: 3};
+
+
 function log(level, str, color){
 	let time = Date.now();
-	log0(new Date(time).toString().substring(0, 24) + "." + omzutil.pad(time % 1000, 3) + " [" + level + "] " + str, color);
+	internal.log0(new Date(time).toString().substring(0, 24) + "." + omzutil.pad(time % 1000, 3) + " [" + level + "] " + str, color);
 	if(typeof(logMessageCallback) == "function")
 		logMessageCallback(str, level);
 }
@@ -75,10 +76,10 @@ function log_save(){
 
 function registerLogFunction(i){
 	module.exports[logLevels[i].name] = (...str) => {
-		if(logLevel < logLevels[i].level)
+		if(internal.logLevel < logLevels[i].level)
 			return;
 		for(let s of str){
-			log(logLevels[i].name, s, logLevels[i].color);
+			internal.log(logLevels[i].name, s, logLevels[i].color);
 		}
 	};
 }
@@ -87,13 +88,18 @@ for(let i = 0; i < logLevels.length; i++){
 	registerLogFunction(i);
 }
 
-module.exports.consoleLog = console.log;
+let consoleLog = console.log;
+module.exports.consoleLog = (obj) => {
+	if(logFile)
+		logCache += obj + "\n";
+	consoleLog(obj);
+};
 
 module.exports.init = (loglevel, logfile) => {
 	let lastSave = 0;
 
 	console.log = (str) => {
-		log("stdout", str);
+		internal.log("stdout", str);
 	};
 	logFile = logfile;
 	if(logFile){
@@ -106,7 +112,7 @@ module.exports.init = (loglevel, logfile) => {
 			}
 		}, 500).unref();
 	}
-	logLevel = loglevel;
+	internal.logLevel = loglevel;
 	module.exports.debug("omz-lib version " + meta.version + " (log level " + loglevel + ")");
 };
 
@@ -125,4 +131,6 @@ module.exports.getLogCache = () => {
 module.exports.setLogCallback = (handler) => {
 	logMessageCallback = handler;
 };
+
+module.exports.internal = internal;
 
