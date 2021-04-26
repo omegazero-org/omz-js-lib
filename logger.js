@@ -36,7 +36,7 @@ let logLevels = [
 	{
 		"name": "fatal",
 		"level": 0,
-		"color": "\x1b[0;97m\x1b[41m"
+		"color": "\x1b[41;97m"
 	},
 	{
 		"name": "error",
@@ -55,11 +55,13 @@ let logLevels = [
 	},
 	{
 		"name": "debug",
-		"level": 4
+		"level": 4,
+		"color": "\x1b[0;37m"
 	},
 	{
 		"name": "trace",
-		"level": 5
+		"level": 5,
+		"color": "\x1b[0;90m"
 	}
 ];
 
@@ -113,7 +115,7 @@ module.exports.init = (loglevel, logfile) => {
 		}, 500).unref();
 	}
 	internal.logLevel = loglevel;
-	module.exports.debug("omz-lib version " + meta.version + " (log level " + loglevel + ")");
+	module.exports.info("omz-js-lib version " + meta.version + " (log level " + loglevel + ")");
 };
 
 module.exports.close = () => {
