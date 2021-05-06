@@ -73,7 +73,6 @@ module.exports.initHandlers = (onClose, onUncaught, onRejection) => {
 			close();
 	});
 
-	process.on('exit', close);
 	process.on('SIGINT', close);
 	process.on('SIGUSR1', close);
 	process.on('SIGUSR2', close);
