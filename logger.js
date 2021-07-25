@@ -118,6 +118,22 @@ module.exports.init = (loglevel, logfile) => {
 	module.exports.info("omz-js-lib version " + meta.version + " (log level " + loglevel + ")");
 };
 
+module.exports.copy = (name, includeConsoleLog = true) => {
+	const logLevels = ["trace", "debug", "info", "warn", "error", "fatal"];
+	let nlogger = {};
+	let addLevel = (level) => {
+		nlogger[level] = (str) => {
+			module.exports[level]("[" + name + "] " + str);
+		}
+	};
+	for(let l of logLevels){
+		addLevel(l);
+	}
+	if(includeConsoleLog)
+		nlogger.consoleLog = module.exports.consoleLog;
+	return nlogger;
+};
+
 module.exports.close = () => {
 	if(logFile){
 		module.exports.info("[logger] Saving log to " + logFile);
