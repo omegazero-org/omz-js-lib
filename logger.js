@@ -7,9 +7,10 @@ let meta = require("./meta.json");
 
 
 const logSaveIntervalTime = 300000;
+const logBufferMaxLen = 1024;
 
 let logSaveInterval;
-let logCache = "";
+let logBuffer = [];
 let logFile;
 
 
@@ -27,8 +28,11 @@ function log(level, str, color){
 }
 
 function log0(str, color){
-	if(logFile)
-		logCache += str + "\n";
+	if(logFile){
+		logBuffer.push(str);
+		if(logBuffer.length > logBufferMaxLen)
+			log_save();
+	}
 	process.stdout.write((color || "") + str + "\x1b[0m\n");
 }
 
@@ -66,14 +70,19 @@ let logLevels = [
 ];
 
 function log_save(){
-	if(!logCache)
+	if(!logFile || logBuffer.length < 1)
 		return;
-	try{
-		fs.appendFileSync(logFile, logCache);
-		logCache = "";
-	}catch(e){
-		module.exports.error("[logger] Error while saving log to " + logFile + ": " + e);
-	}
+	fs.appendFile(logFile, logBuffer.join("\n") + "\n", (err) => {
+		if(err)
+			module.exports.error("[logger] Error while saving log to " + logFile + ": " + err);
+	});
+	logBuffer = [];
+}
+
+function initLogSaveInterval(){
+	logSaveInterval = setInterval(() => {
+		log_save();
+	}, logSaveIntervalTime);
 }
 
 function registerLogFunction(i){
@@ -92,28 +101,16 @@ for(let i = 0; i < logLevels.length; i++){
 
 let consoleLog = console.log;
 module.exports.consoleLog = (obj) => {
-	if(logFile)
-		logCache += obj + "\n";
 	consoleLog(obj);
 };
 
 module.exports.init = (loglevel, logfile) => {
-	let lastSave = 0;
-
 	console.log = (str) => {
 		internal.log("stdout", str);
 	};
 	logFile = logfile;
-	if(logFile){
-		setInterval(() => {
-			let time = Date.now();
-			let roundTime = time - time % logSaveIntervalTime;
-			if(time - lastSave > logSaveIntervalTime){
-				lastSave = roundTime;
-				log_save();
-			}
-		}, 500).unref();
-	}
+	if(logFile)
+		initLogSaveInterval();
 	internal.logLevel = loglevel;
 	module.exports.info("omz-js-lib version " + meta.version + " (log level " + loglevel + ")");
 };
@@ -142,8 +139,8 @@ module.exports.close = () => {
 	clearInterval(logSaveInterval);
 };
 
-module.exports.getLogCache = () => {
-	return logCache;
+module.exports.getLogBuffer = () => {
+	return logBuffer;
 };
 
 module.exports.setLogCallback = (handler) => {
