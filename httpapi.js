@@ -70,8 +70,10 @@ class HttpApiServer{
 				}
 			};
 			if(handler.length > 3 && this.maxPostBodySize > 0){ // 4th argument: postBody
-				if(req.method != "POST")
+				if(req.method != "POST"){
 					this.http_respond(res, 405, {err: "POST is required"});
+					return;
+				}
 				let dataArray = [];
 				let datalen = 0;
 				req.on("data", (d) => {
@@ -96,6 +98,8 @@ class HttpApiServer{
 	}
 
 	http_respond(res, status, json){
+		if(res.writableEnded)
+			return;
 		if(json){
 			if(json.err){
 				json.errmsg = json.err;
