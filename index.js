@@ -3,7 +3,8 @@ let modules = [
 	"meta",
 	"util",
 	"logger",
-	"args"
+	"args",
+	"httpapi"
 ];
 
 for(let s of modules){
