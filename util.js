@@ -37,6 +37,15 @@ module.exports.initPrototypes = () => {
 	Array.prototype.deleteElementAt = function(index){
 		return this.splice(index, 1);
 	};
+
+	const fs = require("fs");
+	fs.promises.exists = function(path){
+		return new Promise((resolve, reject) => {
+			fs.access(path, fs.constants.F_OK, (e) => {
+				resolve(!e);
+			});
+		});
+	};
 };
 
 module.exports.initHandlers = (onClose, onUncaught, onRejection) => {
