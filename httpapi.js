@@ -4,18 +4,19 @@ const url = require("url");
 
 class HttpApiServer{
 
-	constructor(apiEndpoints, {servername, logger, maxPostBodySize, bindAddress, port, handlerPreCall, enableLog}, httpServerInstance){
+	constructor(apiEndpoints, {servername, logger, maxPostBodySize, bindAddress, port, handlerPreCall, enableLog, disableRootRes}, httpServerInstance){
 		if(typeof(apiEndpoints) != "object")
 			throw new TypeError("apiEndpoints must be an object");
 		this.apiEndpoints = apiEndpoints;
 		this.servername = servername || "?";
-		this.servername += " omz-js-lib/httpapi/1.1";
+		this.servername += " omz-js-lib/httpapi/1.2";
 		this.logger = logger || null;
 		this.maxPostBodySize = maxPostBodySize || 0x100000;
-		this.bindAddress = bindAddress || "0.0.0.0";
+		this.bindAddress = bindAddress || "::";
 		this.port = port || 80;
 		this.handlerPreCall = handlerPreCall || null;
 		this.enableLog = enableLog || false;
+		this.disableRootRes = disableRootRes || false;
 
 		if(!httpServerInstance){
 			httpServerInstance = http.createServer();
@@ -39,7 +40,7 @@ class HttpApiServer{
 		let surl = url.parse(req.url, true);
 		let endpoint = surl.pathname.substring(1);
 		let handler = this.apiEndpoints[endpoint];
-		if(surl.pathname == "/"){
+		if(surl.pathname == "/" && !this.disableRootRes){
 			this.http_respond(res, 403, {err: "Forbidden", "SERVER_IDENTIFICATION": this.servername});
 		}else if(handler){
 			const callHandler = async (...args) => {
