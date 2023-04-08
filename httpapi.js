@@ -112,16 +112,16 @@ class HttpApiServer{
 				}[status] || "Error";
 			}
 			let data = Buffer.from(JSON.stringify(json));
-			res.writeHead(status, this.http_getHeaders({"Content-Length": data.length}));
+			res.writeHead(status, this.http_getHeaders({"content-length": data.length}));
 			res.end(data);
 		}else{
-			res.writeHead(status, this.http_getHeaders({"Content-Length": 0}));
+			res.writeHead(status, this.http_getHeaders({"content-length": 0}));
 			res.end();
 		}
 	}
 
 	http_getHeaders(additional){
-		let headers = {"Server": this.servername, "Content-Type": "application/json"};
+		let headers = {"server": this.servername, "content-type": "application/json"};
 		if(typeof(additional) == "object"){
 			for(let a in additional){
 				headers[a] = additional[a];
