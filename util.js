@@ -30,12 +30,16 @@ module.exports.initPrototypes = () => {
 		return this.slice(0, index) + str + this.slice(index);
 	};
 
-	String.prototype.deleteCharAt = function(index){
-		return this.slice(0, index) + this.slice(index + 1);
-	};
-
-	Array.prototype.deleteElementAt = function(index){
-		return this.splice(index, 1);
+	Array.prototype.remove = function(element, compareFunc = (a, b) => a == b){
+		let removed = 0;
+		for(let i = 0; i < this.length; i++){
+			if(compareFunc(this[i], element)){
+				this.splice(i, 1);
+				i--;
+				removed++;
+			}
+		}
+		return removed;
 	};
 
 	const fs = require("fs");
